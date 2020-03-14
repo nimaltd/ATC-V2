@@ -11,6 +11,8 @@ How to use this Library:
 * Enable USART and enable interrupt.   
 * Enable TX DMA is optional.
 * Enable FREERTOS is optional.
+* Add atc_callback() into USART IRQ callback.
+* If Enabled TX DMA, Add atc_callback_txDMA() into DMA callback.
 * Include Header and source into your project.   
 * Config "ATCConfig.h".   
 * Call atc_init( .. .. .. ).   
@@ -31,6 +33,22 @@ int main()
   }
 }
 ```
+in stm32f4xx_it.c
+```
+void USART3_IRQHandler(void)
+{
+  atc_callback(ATC_Element_0);
+}
+
+// if use tx dma
+void DMA1_Stream3_IRQHandler(void)
+{
+  atc_callback_txDMA(ATC_Element_0);
+}
+
+
+```
+
 
 
 
