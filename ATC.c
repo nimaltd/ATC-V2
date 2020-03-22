@@ -245,7 +245,6 @@ uint8_t atc_sendAtCommand(ATC_Element_t ATC_Element, char *atCommand, uint32_t w
   {
     char *str = va_arg (tag, char*);
     #if (ATC_CMSIS_OS == 0)
-    free(atc_elements[ATC_Element].answerSearchingString[i]);
     atc_elements[ATC_Element].answerSearchingString[i] = malloc(strlen(str));
     #endif
     #if (ATC_CMSIS_OS == 1)
@@ -281,13 +280,21 @@ uint8_t atc_sendAtCommand(ATC_Element_t ATC_Element, char *atCommand, uint32_t w
   SEND_FAILD:
   #if (ATC_CMSIS_OS == 0)
   for(uint8_t i = 0 ; i < ATC_MAX_ANSWER_SEARCHING_STRING ; i++)
-    free(atc_elements[ATC_Element].answerSearchingString[i]);
+  {
+     free(atc_elements[ATC_Element].answerSearchingString[i]);
+     atc_elements[ATC_Element].answerSearchingString[i] = NULL;  
+  }
   free(atc_elements[ATC_Element].foundAnswerString);
+  atc_elements[ATC_Element].foundAnswerString = NULL;
   #endif
   #if (ATC_CMSIS_OS == 1)
   for(uint8_t i = 0 ; i < ATC_MAX_ANSWER_SEARCHING_STRING ; i++)
-    vPortFree(atc_elements[ATC_Element].answerSearchingString[i]);
+  {
+     vPortFree(atc_elements[ATC_Element].answerSearchingString[i]);
+     atc_elements[ATC_Element].answerSearchingString[i] = NULL;
+  }
   vPortFree(atc_elements[ATC_Element].foundAnswerString);
+  atc_elements[ATC_Element].foundAnswerString = NULL;   
   #endif  
   return retValue;
 }  
