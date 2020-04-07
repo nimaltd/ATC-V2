@@ -8,9 +8,12 @@
   Instagram:  http://instagram.com/github.NimaLTD
   Youtube:    https://www.youtube.com/channel/UCUhY7qY1klJm1d2kulr9ckw
   
-  Version:    2.0.0
+  Version:    2.0.2
   
   Reversion History:
+  
+  (2.0.0)
+  fix bugs.
   
   (2.0.0)
   First release.
@@ -45,6 +48,7 @@ typedef struct
   uint16_t        rxTimeout; 
   uint8_t         txBusy; 
   int8_t          foundAnswer;  
+  uint16_t        foundAnswerSize; 
   char*           foundAnswerString;
   char*           answerSearchingString[ATC_MAX_ANSWER_SEARCHING_STRING];
   char*           alwaysSearchingString[ATC_MAX_ALWAYS_SEARCHING_STRING]; 
@@ -76,7 +80,7 @@ bool            atc_init(ATC_Element_t ATC_Element, USART_TypeDef *usart, uint16
 #else
 bool            atc_init(ATC_Element_t ATC_Element, USART_TypeDef *usart, uint16_t rxSize, uint16_t rxTimeout, char* name);
 #endif
-uint8_t         atc_sendAtCommand(ATC_Element_t ATC_Element, char *atCommand, uint32_t wait_ms,char *answerString,uint16_t answerSize, uint8_t searchingItems,...);
+uint8_t         atc_sendAtCommand(ATC_Element_t ATC_Element, char *atCommand, uint32_t wait_ms, char *answerString, uint16_t answerSize, uint8_t searchingItems,...);
 bool            atc_addAutoSearchString(ATC_Element_t ATC_Element, char *str);
 
 uint8_t         atc_sendString(ATC_Element_t ATC_Element, char *str, uint32_t timeout);

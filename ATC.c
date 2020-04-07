@@ -107,16 +107,7 @@ void atc_process(void)
         if( ansStr != NULL)
         {
           if(atc_elements[el].foundAnswerString != NULL)
-          {
-            #if (ATC_CMSIS_OS == 0)            
-            atc_elements[el].foundAnswerString = malloc(strlen(ansStr));
-            #endif
-            #if (ATC_CMSIS_OS == 1)
-            atc_elements[el].foundAnswerString = pvPortMalloc(strlen(ansStr));
-            #endif
-            if(atc_elements[el].foundAnswerString != NULL)
-              strcpy(atc_elements[el].foundAnswerString, ansStr);
-          }
+            strncpy(atc_elements[el].foundAnswerString, ansStr, atc_elements[el].foundAnswerSize);
           atc_elements[el].foundAnswer = ans; 
           break;          
         }        
@@ -234,10 +225,15 @@ uint8_t atc_sendData(ATC_Element_t ATC_Element, uint8_t *data, uint16_t size, ui
   return 1;
 }
 //#####################################################################################################
-uint8_t atc_sendAtCommand(ATC_Element_t ATC_Element, char *atCommand, uint32_t wait_ms,char *answerString,uint16_t answerSize, uint8_t searchingItems,...)
+uint8_t atc_sendAtCommand(ATC_Element_t ATC_Element, char *atCommand, uint32_t wait_ms, char *answerString, uint16_t answerSize, uint8_t searchingItems,...)
 {
   if((ATC_Element < ATC_Element_0) || (ATC_Element >= atc_cnt))
     return 0;
+  if(answerString != NULL)
+  {
+    memset(answerString, 0 , answerSize);
+    atc_elements[ATC_Element].foundAnswerSize = answerSize;
+  }
   atc_elements[ATC_Element].foundAnswerString = answerString;
   va_list tag;
   va_start (tag,searchingItems);
@@ -263,8 +259,6 @@ uint8_t atc_sendAtCommand(ATC_Element_t ATC_Element, char *atCommand, uint32_t w
   {
     atc_delay(1);
     atc_process();  
-    if((atc_elements[ATC_Element].foundAnswer != -1) && (answerString != NULL))
-      strncpy(answerString, atc_elements[ATC_Element].foundAnswerString, answerSize);
     if(atc_elements[ATC_Element].foundAnswer >= 0)
     {
       retValue = atc_elements[ATC_Element].foundAnswer + 1;
@@ -293,8 +287,6 @@ uint8_t atc_sendAtCommand(ATC_Element_t ATC_Element, char *atCommand, uint32_t w
      vPortFree(atc_elements[ATC_Element].answerSearchingString[i]);
      atc_elements[ATC_Element].answerSearchingString[i] = NULL;
   }
-  vPortFree(atc_elements[ATC_Element].foundAnswerString);
-  atc_elements[ATC_Element].foundAnswerString = NULL;   
   #endif  
   return retValue;
 }  

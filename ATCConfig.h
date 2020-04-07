@@ -7,7 +7,7 @@
 
 #define   ATC_CMSIS_OS                      (1)
 #define   ATC_TXDMA                         (1)
-#define   ATC_MAX_ELEMENTS                  (2)
+#define   ATC_MAX_ELEMENTS                  (1)
 #define   ATC_MAX_ALWAYS_SEARCHING_STRING   (10)
 #define   ATC_MAX_ANSWER_SEARCHING_STRING   (5)
 
