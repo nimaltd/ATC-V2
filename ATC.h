@@ -8,9 +8,12 @@
   Instagram:  http://instagram.com/github.NimaLTD
   Youtube:    https://www.youtube.com/channel/UCUhY7qY1klJm1d2kulr9ckw
   
-  Version:    2.0.2
+  Version:    2.1.0
   
   Reversion History:
+  
+  (2.1.0)
+  fix bugs.
   
   (2.0.0)
   fix bugs.
@@ -74,8 +77,8 @@ typedef enum
 //###################################################################################
 void            atc_process(void);  // put in main loop. 
 void            atc_callback(ATC_Element_t ATC_Element);  //  put in usart callback
-#if (ATC_TXDMA == 1)
 void            atc_callback_txDMA(ATC_Element_t ATC_Element);  //  put in usart txDMA callback
+#if (ATC_TXDMA == 1)
 bool            atc_init(ATC_Element_t ATC_Element, USART_TypeDef *usart, uint16_t rxSize, uint16_t rxTimeout, char* name, DMA_TypeDef *DMA, uint32_t LL_DMA_STREAM_);
 #else
 bool            atc_init(ATC_Element_t ATC_Element, USART_TypeDef *usart, uint16_t rxSize, uint16_t rxTimeout, char* name);

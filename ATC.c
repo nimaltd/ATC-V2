@@ -27,9 +27,9 @@ void atc_callback(ATC_Element_t ATC_Element)
   atc_elements[ATC_Element].rxTime = HAL_GetTick();
 }
 //#####################################################################################################
-#if (ATC_TXDMA == 1)
 void  atc_callback_txDMA(ATC_Element_t ATC_Element)
 {
+  #if (ATC_TXDMA == 1)
   switch(atc_elements[ATC_Element].txDMA_Stream)
   {
     case LL_DMA_STREAM_0:
@@ -89,8 +89,8 @@ void  atc_callback_txDMA(ATC_Element_t ATC_Element)
       }      
     break;
   }
+  #endif
 }
-#endif
 //#####################################################################################################
 void atc_process(void)
 {
@@ -104,7 +104,7 @@ void atc_process(void)
         if(atc_elements[el].answerSearchingString[ans] == NULL)
           break;
         char *ansStr = strstr((char*)atc_elements[el].rxBuffer, atc_elements[el].answerSearchingString[ans]);         
-        if( ansStr != NULL)
+        if(ansStr != NULL)
         {
           if(atc_elements[el].foundAnswerString != NULL)
             strncpy(atc_elements[el].foundAnswerString, ansStr, atc_elements[el].foundAnswerSize);
@@ -190,6 +190,7 @@ uint8_t atc_sendData(ATC_Element_t ATC_Element, uint8_t *data, uint16_t size, ui
   while(atc_elements[ATC_Element].txBusy == 1)
     atc_delay(1);
   atc_elements[ATC_Element].txBusy = 1;
+  uint32_t startTime = HAL_GetTick();
   #if (ATC_TXDMA == 0)
   for (uint16_t i = 0; i<size; i++)
   {
@@ -219,7 +220,14 @@ uint8_t atc_sendData(ATC_Element_t ATC_Element, uint8_t *data, uint16_t size, ui
     LL_DMA_GetDataTransferDirection(atc_elements[ATC_Element].txDMA, atc_elements[ATC_Element].txDMA_Stream));
   LL_DMA_SetDataLength(atc_elements[ATC_Element].txDMA, atc_elements[ATC_Element].txDMA_Stream, size);
   while(atc_elements[ATC_Element].txDMAdone == 0)
+  {
     atc_delay(1);
+    if(HAL_GetTick() - startTime > timeout)
+    {
+      atc_elements[ATC_Element].txBusy = 0;
+      return 0;
+    }  
+  }
   #endif
   atc_elements[ATC_Element].txBusy = 0;
   return 1;
@@ -229,11 +237,9 @@ uint8_t atc_sendAtCommand(ATC_Element_t ATC_Element, char *atCommand, uint32_t w
 {
   if((ATC_Element < ATC_Element_0) || (ATC_Element >= atc_cnt))
     return 0;
-  if(answerString != NULL)
-  {
-    memset(answerString, 0 , answerSize);
-    atc_elements[ATC_Element].foundAnswerSize = answerSize;
-  }
+  atc_process();
+  uint32_t startTime;
+  atc_elements[ATC_Element].foundAnswerSize = answerSize;
   atc_elements[ATC_Element].foundAnswerString = answerString;
   va_list tag;
   va_start (tag,searchingItems);
@@ -249,12 +255,14 @@ uint8_t atc_sendAtCommand(ATC_Element_t ATC_Element, char *atCommand, uint32_t w
     if(atc_elements[ATC_Element].answerSearchingString[i] != NULL)
       strcpy(atc_elements[ATC_Element].answerSearchingString[i], str);
   }
-  va_end (tag);
+  va_end(tag);
   atc_elements[ATC_Element].foundAnswer = -1;
   uint8_t retValue = 0;
-  uint32_t startTime = HAL_GetTick();
-  if( atc_sendString(ATC_Element, atCommand, 200) == 0)
-    goto SEND_FAILD;      
+  if(atc_sendString(ATC_Element, atCommand, 1000) == 0)
+    goto SEND_FAILD;  
+  if(answerString != NULL)
+    memset(answerString, 0 , answerSize);
+  startTime = HAL_GetTick();  
   while(1)
   {
     atc_delay(1);
